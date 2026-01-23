@@ -1,23 +1,54 @@
 #!/bin/bash
 
-# Part 1: File and Directory Exploration
-echo "Welcome to the Interactive File and Directory Explorer!"
+#When the script is run without arguments, it should greet the user and, 
+#show all files and directories in the current folder, along with their sizes.
+#
+echo "Welcome to interactive file and directory explorer!"
 
+
+#---------------part 1 -----------------
+#
+#File and directory explore loop
+#
 while true; do
-    # List all files and directories in the current path
-    echo "Files and Directories in the Current Path:"
-    ls -lh
 
-    # Part 2: Character Counting
-    read -p "Enter a line of text (Press Enter without text to exit): " input
+ #list all file and directory in the current path
 
-    # Exit if the user enters an empty string
-    if [ -z "$input" ]; then
-        echo "Exiting the Interactive Explorer. Goodbye!"
-        break
-    fi
+echo "List all file and directories in the current path:"
 
-    # Calculate and print the character count for the input line
-    char_count=$(echo -n "$input" | wc -m)
-    echo "Character Count: $char_count"
+ls -lh
+#Ask user if they want to exit
+read -p "Type 'exit' to quit and press 'enter' to continue: " choice
+
+if [[ "$choice" == "exit" ]]
+then
+	break
+fi
+
 done
+
+
+#-----------------------part2-----------------------------------------
+while true; do
+
+read -p "Enter a line of text (press enter without text to exit): " line 
+
+#exit if the user type  an empty string
+#
+if [ -z "$line" ]
+then
+	echo "exiting the interactive explorer. Goodbye!"
+	break
+
+   fi
+#calculate and print the charector count for the input line
+char_count=$(echo -n "$line" | wc -m)
+
+echo "charecter count $char_count"
+
+
+done
+
+
+
+
