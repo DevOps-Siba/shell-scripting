@@ -1,87 +1,134 @@
 #!/bin/bash
-# =========================================
-# Monitoring Metrics Script
-# Author: Sibananda Pradhan
-# Description:
-#   Monitors CPU, Memory, Disk usage
-#   Monitors system services (e.g. nginx)
-# =========================================
 
-# Default sleep interval
-SLEEP_INTERVAL=5
+# ===============================================
+#   Simple Monitoring Metrics Script
+#   Covers Task 1 to Task 7 (Clean Version)
+# ===============================================
 
-# Function to display CPU usage
-cpu_usage() {
-  echo "----- CPU Usage -----"
-  top -bn1 | grep "Cpu(s)" | awk '{print "CPU Usage: " 100-$8 "%"}'
-}
+echo "=================================="
+echo "  System Monitoring Script Started"
+echo "=================================="
 
-# Function to display memory usage
-memory_usage() {
-  echo "----- Memory Usage -----"
-  free -h | awk '/Mem:/ {print "Used: "$3" / Total: "$2}'
-}
+# ================= MAIN LOOP ==================
 
-# Function to display disk usage
-disk_usage() {
-  echo "----- Disk Usage -----"
-  df -h / | awk 'NR==2 {print "Used: "$3" / Total: "$2" ("$5")"}'
-}
+while true
+do
+    echo ""
+    echo "========= Monitoring Menu ========="
+    echo "1. View CPU Usage"
+    echo "2. View Memory Usage"
+    echo "3. View Disk Usage"
+    echo "4. View All Metrics"
+    echo "5. Continuous Monitoring (with interval)"
+    echo "6. Monitor a Service"
+    echo "7. Exit"
+    echo "==================================="
 
-# Function to monitor a service
-check_service() {
-  read -p "Enter service name (e.g. nginx): " SERVICE_NAME
+    read -p "Enter your choice: " choice
 
-  if systemctl is-active --quiet "$SERVICE_NAME"; then
-    echo "[OK] Service '$SERVICE_NAME' is running."
-  else
-    echo "[WARNING] Service '$SERVICE_NAME' is NOT running."
-    read -p "Do you want to start it? (y/n): " choice
-    if [[ "$choice" == "y" ]]; then
-      sudo systemctl start "$SERVICE_NAME" && echo "[INFO] Service started."
-    fi
-  fi
-}
+    case $choice in
 
-# Function to display metrics
-show_metrics() {
-  clear
-  echo "========== SYSTEM METRICS =========="
-  cpu_usage
-  memory_usage
-  disk_usage
-  echo "==================================="
-}
+        # -------- Task 1 --------
+        1)
+            echo "===== CPU Usage ====="
+            top -bn1 | grep "Cpu(s)"
+            ;;
 
-# Main menu loop
-while true; do
-  echo ""
-  echo "====== Monitoring Menu ======"
-  echo "1. View System Metrics"
-  echo "2. Monitor a Service"
-  echo "3. Change Sleep Interval (Current: ${SLEEP_INTERVAL}s)"
-  echo "4. Exit"
-  echo "============================="
-  read -p "Choose an option: " option
+        2)
+            echo "===== Memory Usage ====="
+            free -h
+            ;;
 
-  case $option in
-    1)
-      show_metrics
-      sleep "$SLEEP_INTERVAL"
-      ;;
-    2)
-      check_service
-      ;;
-    3)
-      read -p "Enter new sleep interval (seconds): " SLEEP_INTERVAL
-      ;;
-    4)
-      echo "Exiting monitoring script. Bye 👋"
-      exit 0
-      ;;
-    *)
-      echo "[ERROR] Invalid option. Please choose 1-4."
-      ;;
-  esac
+        3)
+            echo "===== Disk Usage ====="
+            df -h
+            ;;
+
+        4)
+            echo "===== All System Metrics ====="
+            echo ""
+            echo "CPU Usage:"
+            top -bn1 | grep "Cpu(s)"
+            echo ""
+            echo "Memory Usage:"
+            free -h
+            echo ""
+            echo "Disk Usage:"
+            df -h
+            ;;
+
+        # -------- Task 3 (Correct Interval Loop) --------
+        5)
+            read -p "Enter refresh interval (seconds): " interval
+
+            # Validate number
+            if ! [[ "$interval" =~ ^[0-9]+$ ]]; then
+                echo "❌ Invalid input! Please enter a number."
+            else
+                echo ""
+                echo "Continuous monitoring started..."
+                echo "Press CTRL+C to stop and return to menu."
+                echo ""
+
+                # Continuous loop
+                while true
+                do
+                    clear
+                    echo "===== Continuous Monitoring ====="
+                    date
+                    echo ""
+                    echo "CPU Usage:"
+                    top -bn1 | grep "Cpu(s)"
+                    echo ""
+                    echo "Memory Usage:"
+                    free -h
+                    echo ""
+                    echo "Disk Usage:"
+                    df -h
+                    echo ""
+                    sleep "$interval"
+                done
+            fi
+            ;;
+
+        # -------- Task 4 & 5 --------
+        6)
+            read -p "Enter service name (example: nginx): " service
+
+            if [ -z "$service" ]; then
+                echo "❌ Service name cannot be empty!"
+            else
+                status=$(systemctl is-active "$service" 2>/dev/null)
+
+                if [ $? -ne 0 ]; then
+                    echo "❌ Service '$service' does not exist."
+                elif [ "$status" == "active" ]; then
+                    echo "✅ Service '$service' is running."
+                else
+                    echo "⚠️ Service '$service' is NOT running."
+                    read -p "Do you want to start it? (y/n): " answer
+
+                    if [ "$answer" == "y" ]; then
+                        sudo systemctl start "$service"
+                        echo "Service started."
+                    else
+                        echo "Service not started."
+                    fi
+                fi
+            fi
+            ;;
+
+        # -------- Exit --------
+        7)
+            echo "Exiting Script. Goodbye 👋"
+            break
+            ;;
+
+        # -------- Error Handling --------
+        *)
+            echo "❌ Invalid choice! Please select 1-7."
+            ;;
+    esac
+
 done
 
